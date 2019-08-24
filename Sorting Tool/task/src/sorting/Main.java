@@ -6,9 +6,10 @@ import java.util.*;
 public class Main {
     private static Scanner scanner;
     private static List<String> allowedParameters = List.of("-dataType");
+    private static HashMap<String, String> inputMap = new HashMap<>();
+
     public static void main(final String[] args) {
         scanner = new Scanner(System.in);
-
         /*
          notes on handling input:
          initialize hashmap HashMap<String, String>
@@ -17,31 +18,46 @@ public class Main {
 
          then, have an ordered list of if...else if checks for each param
          */
-        String dataTypeInput = "word";
-        for (int i = 0; i < args.length; i += 2){
+        for (int i = 0; i < args.length; i += 1){
             String arg = args[i];
-            if (!allowedParameters.contains(arg)) continue;
-            switch (arg){
-                case "-dataType":
-                    if (!args[i+1].equals("")){
-                        dataTypeInput = args[i+1];
-                    }
+//            if (!allowedParameters.contains(arg)) continue;
+            if ("-sortIntegers".equals(arg)){
+                inputMap.put(arg, "true");
+            }else if ("-dataType".equals(arg)){
+                inputMap.put(arg, args[i + 1]);
+            }
+        }
+
+        if (inputMap.containsKey("-sortIntegers")){
+            outputSortedIntegers();
+            return;
+        }else if (inputMap.containsKey("-dataType")){
+            String dataTypeInput = inputMap.get("-dataType");
+            switch (dataTypeInput) {
+                case "long":
+                    countLongs();
                     break;
+                case "line":
+                    countLines();
+                    break;
+                case "word":
                 default:
+                    countWords();
                     break;
             }
         }
-        switch (dataTypeInput) {
-            case "long":
-                countLongs();
-                break;
-            case "line":
-                countLines();
-                break;
-            case "word":
-            default:
-                countWords();
-                break;
+    }
+
+    private static void outputSortedIntegers(){
+        ArrayList<Integer> intList = new ArrayList<>();
+        while (scanner.hasNextInt()){
+            intList.add(scanner.nextInt());
+        }
+        Collections.sort(intList);
+        System.out.println("Total numbers: " + intList.size());
+        System.out.print("Sorted data: ");
+        for (int el : intList){
+            System.out.print(el + " ");
         }
     }
 
