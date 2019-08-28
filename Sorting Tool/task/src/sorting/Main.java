@@ -19,6 +19,7 @@ public class Main {
             }else if ("-dataType".equals(arg)){
                 inputMap.put(arg, args[i + 1]);
             }else if ("-sortingType".equals(arg)){
+                if (i == args.length - 1) return;
                 inputMap.put(arg, args[i + 1]);
             }
         }
