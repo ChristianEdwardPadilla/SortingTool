@@ -1,5 +1,6 @@
 package sorting;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -7,23 +8,17 @@ public class Main {
     private static Scanner scanner;
     private static List<String> allowedParameters = List.of("-dataType");
     private static HashMap<String, String> inputMap = new HashMap<>();
-
+    private static String sortingMode;
     public static void main(final String[] args) {
         scanner = new Scanner(System.in);
-        /*
-         notes on handling input:
-         initialize hashmap HashMap<String, String>
-         loop thru the args array, look for entries that are in the allowedparams array
-         when found, the key is the allowedParam, the value is the following string
 
-         then, have an ordered list of if...else if checks for each param
-         */
         for (int i = 0; i < args.length; i += 1){
             String arg = args[i];
-//            if (!allowedParameters.contains(arg)) continue;
             if ("-sortIntegers".equals(arg)){
                 inputMap.put(arg, "true");
             }else if ("-dataType".equals(arg)){
+                inputMap.put(arg, args[i + 1]);
+            }else if ("-sortingType".equals(arg)){
                 inputMap.put(arg, args[i + 1]);
             }
         }
@@ -31,7 +26,21 @@ public class Main {
         if (inputMap.containsKey("-sortIntegers")){
             outputSortedIntegers();
             return;
-        }else if (inputMap.containsKey("-dataType")){
+        }
+        if(inputMap.containsKey("-sortingType")){
+            String sortingTypeInput = inputMap.get("-sortingType");
+            switch (sortingTypeInput){
+                case "byCount":
+                    sortingMode = "byCount";
+                    break;
+                case "natural":
+                default:
+                    sortingMode = "natural";
+                    break;
+            }
+
+        }
+        if (inputMap.containsKey("-dataType")){
             String dataTypeInput = inputMap.get("-dataType");
             switch (dataTypeInput) {
                 case "long":
@@ -63,70 +72,151 @@ public class Main {
 
     private static void countLongs(){
         int totalEntryCounts = 0;
-        long maxEntry = Long.MIN_VALUE;
-        int maxEntryCount = 0;
+        Map<Long, Integer> entryMap = new HashMap<>();
         while (scanner.hasNextLong()){
             totalEntryCounts += 1;
-            long cand = scanner.nextLong();
-            if (cand > maxEntry){
-                maxEntry = cand;
-                maxEntryCount = 1;
-            }else if (cand == maxEntry){
-                maxEntryCount += 1;
+            Long cand = scanner.nextLong();
+            if (entryMap.containsKey(cand)){
+                entryMap.put(cand, entryMap.get(cand) + 1);
+            }else{
+                entryMap.put(cand, 1);
             }
         }
-        double percentDouble = Math.floor(100 * (double) maxEntryCount / (double) totalEntryCounts);
-        int percentage = (int) percentDouble;
+
+        List<Map.Entry<Long, Integer>> entryList = new ArrayList<>(entryMap.entrySet());
+        if ("byCount".equals(sortingMode)){
+            Collections.sort(entryList, new Comparator<Map.Entry<Long, Integer>>() {
+                @Override
+                public int compare(Map.Entry<Long, Integer> o1, Map.Entry<Long, Integer> o2) {
+                    int result = o1.getValue().compareTo(o2.getValue());
+                    if (result == 0){
+                        result = o1.getKey().compareTo(o2.getKey());
+                    }
+                    return result;
+                }
+            });
+        }else{
+            Collections.sort(entryList, new Comparator<Map.Entry<Long, Integer>>() {
+                @Override
+                public int compare(Map.Entry<Long, Integer> o1, Map.Entry<Long, Integer> o2) {
+                    return o1.getKey().compareTo(o2.getKey());
+                }
+            });
+        }
+
+
+
         System.out.println(String.format("Total numbers: %d", totalEntryCounts));
-        System.out.println(String.format("The greatest number: %d (%d time(s), %d", maxEntry, maxEntryCount, percentage) + "%)");
+        for (Map.Entry<Long, Integer> el : entryList){
+            Long key = el.getKey();
+            Integer val = el.getValue();
+            Integer perc = 100 * val/totalEntryCounts;
+            if ("byCount".equals(sortingMode)){
+                System.out.println(String.format("%d: %d time(s), %d", key, val, perc) +"%");
+            }else{
+                for (int i = 1; i <= val; i++){
+                    System.out.print(key + " ");
+                }
+            }
+        }
     }
 
     private static void countLines(){
         int totalEntryCounts = 0;
-        String maxEntry = "";
-        int maxEntryLength = 0;
-        int maxEntryCount = 0;
+        Map<String, Integer> entryMap = new HashMap<>();
         while (scanner.hasNextLine()){
             totalEntryCounts += 1;
             String cand = scanner.nextLine();
-            int candLength = cand.length();
-
-            if (candLength > maxEntryLength){
-                maxEntry = cand;
-                maxEntryLength = candLength;
-                maxEntryCount = 1;
-            }else if (candLength == maxEntryLength){
-                maxEntryCount += 1;
+            if (entryMap.containsKey(cand)){
+                entryMap.put(cand, entryMap.get(cand) + 1);
+            }else{
+                entryMap.put(cand, 1);
             }
         }
-        double percentDouble = Math.floor(100 * (double) maxEntryCount / (double) totalEntryCounts);
-        int percentage = (int) percentDouble;
+
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(entryMap.entrySet());
+        if ("byCount".equals(sortingMode)){
+            Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+                @Override
+                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                    int result = o1.getValue().compareTo(o2.getValue());
+                    if (result == 0){
+                        result = o1.getKey().compareTo(o2.getKey());
+                    }
+                    return result;
+                }
+            });
+        }else{
+            Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+                @Override
+                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                    return o1.getKey().compareTo(o2.getKey());
+                }
+            });
+        }
+
+
         System.out.println(String.format("Total lines: %d", totalEntryCounts));
-        System.out.println("The longest line: " + "\n" + maxEntry);
-        System.out.println(String.format("(%d time(s), %d", maxEntryCount, percentage) + "%)");
+        for (Map.Entry<String, Integer> el : entryList){
+            String key = el.getKey();
+            Integer val = el.getValue();
+            Integer perc = 100 * val/totalEntryCounts;
+            if ("byCount".equals(sortingMode)){
+                System.out.println(String.format("%s: %d time(s), %d", key, val, perc) +"%");
+            }else{
+                for (int i = 1; i <= val; i++){
+                    System.out.print(key + " ");
+                }
+            }
+        }
     }
 
     private static void countWords(){
         int totalEntryCounts = 0;
-        String maxEntry = "";
-        int maxEntryLength = 0;
-        int maxEntryCount = 0;
+        Map<String, Integer> entryMap = new HashMap<>();
         while (scanner.hasNext()){
             totalEntryCounts += 1;
             String cand = scanner.next();
-            int candLength = cand.length();
-
-            if (candLength > maxEntryLength){
-                maxEntry = cand;
-                maxEntryLength = candLength;
-                maxEntryCount = 1;
-            }else if (candLength == maxEntryLength){
-                maxEntryCount += 1;
+            if (entryMap.containsKey(cand)){
+                entryMap.put(cand, entryMap.get(cand) + 1);
+            }else{
+                entryMap.put(cand, 1);
             }
         }
-        double percentDouble = Math.floor(100 * (double) maxEntryCount / (double) totalEntryCounts);
-        int percentage = (int) percentDouble;
+
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(entryMap.entrySet());
+        if ("byCount".equals(sortingMode)){
+            Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+                @Override
+                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                    int result = o1.getValue().compareTo(o2.getValue());
+                    if (result == 0){
+                        result = o1.getKey().compareTo(o2.getKey());
+                    }
+                    return result;
+                }
+            });
+        }else{
+            Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+                @Override
+                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                    return o1.getKey().compareTo(o2.getKey());
+                }
+            });
+        }
+
         System.out.println(String.format("Total words: %d", totalEntryCounts));
-        System.out.println(String.format("The longest word: %s (%d time(s), %d", maxEntry, maxEntryCount, percentage) + "%)");
+        for (Map.Entry<String, Integer> el : entryList){
+            String key = el.getKey();
+            Integer val = el.getValue();
+            Integer perc = 100 * val/totalEntryCounts;
+            if ("byCount".equals(sortingMode)){
+                System.out.println(String.format("%s: %d time(s), %d", key, val, perc) +"%");
+            }else{
+                for (int i = 1; i <= val; i++){
+                    System.out.print(key + " ");
+                }
+            }
+        }
     }
 }
